@@ -1,0 +1,34 @@
+﻿# Secrets and environment files
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.db
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+build/
+
+# Generated exports and reports
+pro-export.csv
+threatview-export.csv
+pro-report.pdf
+weekly-threat-landscape.pdf
+free-export-response.txt
+free-report-response.txt
+free-test.txt
+
+# Local data and GeoIP databases
+data/geoip/*.mmdb
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,32 @@
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: threatview
+    volumes:
+      - pg:/var/lib/postgresql/data
+
+  api:
+    build: ./backend
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@db/threatview
+      MAXMIND_DB_PATH: /data/geoip/GeoLite2-Country.mmdb
+    volumes:
+      - ./data/geoip:/data/geoip:ro
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  web:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
+volumes:
+  pg:
