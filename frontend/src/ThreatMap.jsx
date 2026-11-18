@@ -34,7 +34,20 @@ const COUNTRY_COORDINATES = {
   HK: [22.32, 114.17],
   SC: [-4.68, 55.49],
   ZA: [-30.56, 22.94],
-  LV: [56.88, 24.6]
+  LV: [56.88, 24.6],
+
+  // Additional countries returned by the API
+  BE: [50.50, 4.47],
+  HU: [47.16, 19.50],
+  NA: [-22.95, 18.49],
+  TT: [10.69, -61.22],
+  AE: [23.42, 53.85],
+  EG: [26.82, 30.80],
+  NO: [60.47, 8.46],
+  PL: [51.92, 19.14],
+  VN: [14.06, 108.28],
+  MY: [4.21, 101.98],
+  TH: [15.87, 100.99]
 };
 
 const SEVERITY_COLORS = {
@@ -44,7 +57,7 @@ const SEVERITY_COLORS = {
 };
 
 export default function ThreatMap({ countries = [], period = 1 }) {
-  
+
   const points = countries.filter(
     (item) =>
       COUNTRY_COORDINATES[item.name] &&
@@ -65,7 +78,8 @@ export default function ThreatMap({ countries = [], period = 1 }) {
           marginBottom: "8px"
         }}
       >
-       Country distribution · Last {period} day{Number(period) === 1 ? "" : "s"}
+        Country distribution · Last {period} day
+        {Number(period) === 1 ? "" : "s"}
       </div>
 
       <MapContainer
@@ -93,14 +107,16 @@ export default function ThreatMap({ countries = [], period = 1 }) {
           const medium = Number(item.medium || 0);
           const low = Number(item.low || 0);
 
+          // High severity always takes priority
           const severity =
-            high >= medium && high >= low
+            high > 0
               ? "high"
-              : medium >= low
+              : medium > 0
                 ? "medium"
                 : "low";
 
           const color = SEVERITY_COLORS[severity];
+
           const intensity = Number(item.count) / maxCount;
           const radius = 7 + intensity * 16;
 

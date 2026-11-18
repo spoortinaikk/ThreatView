@@ -1,4 +1,4 @@
-
+﻿
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ResponsiveContainer,
@@ -140,6 +140,7 @@ export default function App() {
 
   const [period, setPeriod] = useState("1");
   const [stats, setStats] = useState(null);
+  const [mapStats, setMapStats] = useState(null);
   const [trends, setTrends] = useState([]);
   const [iocs, setIocs] = useState([]);
   const [me, setMe] = useState(null);
@@ -180,22 +181,25 @@ export default function App() {
       setError("");
 
       try {
-        const [profile, summary, trendData, list] =
-          await Promise.all([
-            request("/me", {}, apiKey).catch(() => null),
-            request(`/stats?days=${period}`, {}, apiKey),
-            request(`/trends?days=${period}`, {}, apiKey),
-            request(
-              `/iocs?days=${period}&sort=${sort}&order=${order}&limit=50`,
-              {},
-              apiKey
-            )
-          ]);
+        const [profile, summary, trendData, list, mapData] =
+  await Promise.all([
+    request("/me", {}, apiKey).catch(() => null),
+    request(`/stats?days=${period}`, {}, apiKey),
+    request(`/trends?days=${period}`, {}, apiKey),
+    request(
+      `/iocs?days=${period}&sort=${sort}&order=${order}&limit=50`,
+      {},
+      apiKey
+    ),
+    request("/map-stats", {}, apiKey)
+  ]);
+        
 
         if (cancelled) return;
 
         setMe(profile);
         setStats(summary);
+        setMapStats(mapData);
 
         setTrends(
           normalizeTrendData(
@@ -245,13 +249,13 @@ export default function App() {
       label: "Low Severity",
       value: stats?.low ?? 0,
       className: "low",
-      icon: "i"
+      icon: "!"
     },
     {
       label: "Total Indicators",
       value: total,
       className: "total",
-      icon: "◇"
+      icon: "◆"
     }
   ];
 
@@ -419,7 +423,7 @@ export default function App() {
           className={`nav-item ${activeNav === "Overview" ? "active" : ""}`}
           onClick={() => scrollToSection("overview", "Overview")}
         >
-          <span className="nav-icon">▦</span>
+          <span className="nav-icon">•</span>
           Overview
         </button>
 
@@ -427,7 +431,7 @@ export default function App() {
           className={`nav-item ${activeNav === "Threat Indicators" ? "active" : ""}`}
           onClick={() => scrollToSection("indicators", "Threat Indicators")}
         >
-          <span className="nav-icon">⬡</span>
+          <span className="nav-icon">◇</span>
           Threat Indicators
         </button>
 
@@ -435,7 +439,7 @@ export default function App() {
           className={`nav-item ${activeNav === "Threat Analytics" ? "active" : ""}`}
           onClick={() => scrollToSection("analytics", "Threat Analytics")}
         >
-          <span className="nav-icon">⌁</span>
+          <span className="nav-icon">↗</span>
           Threat Analytics
         </button>
 
@@ -460,7 +464,7 @@ export default function App() {
 
         <div className="sidebar-footer">
           <i /> Dashboard available
-          <p>ThreatView · Security Platform</p>
+          <p>ThreatView Security Platform</p>
         </div>
       </aside>
 
@@ -509,7 +513,7 @@ export default function App() {
 
           {loading && (
             <div className="loading-line">
-              Refreshing threat intelligence…
+              Refreshing threat intelligence...
             </div>
           )}
 
@@ -529,7 +533,7 @@ export default function App() {
             />
 
             <button type="submit" className="primary-button">
-              ⌕ &nbsp; Investigate <span>→</span>
+              Investigate <span>→</span>
             </button>
           </form>
 
@@ -541,7 +545,7 @@ export default function App() {
           )}
 
           <div className="section-title">
-            <span className="shield">⬡</span>
+            <span className="shield">◇</span>
             <h2>Threat Severity</h2>
             <small>Severity distribution among the loaded indicators</small>
           </div>
@@ -558,7 +562,7 @@ export default function App() {
                   <strong>{prettyNumber(item.value)}</strong>
                   <small>Threat indicators</small>
                 </div>
-                <div className="sparkline">⌁⌁</div>
+                <div className="sparkline">↗↗</div>
               </div>
             ))}
           </div>
@@ -577,7 +581,10 @@ export default function App() {
 
               <div className="country-content">
                 <div className="map-wrap">
-                 <ThreatMap countries={stats?.countries || []} period={period} />
+                 <ThreatMap
+                    countries={mapStats?.countries || []}
+                    period={mapStats?.period_days || 30}
+                  />
                 </div>
 
                 <div className="country-chart">
@@ -628,7 +635,7 @@ export default function App() {
             <section className="panel trends-panel">
               <div className="panel-heading">
                 <div>
-                  <h2><span>⌁</span> Malware Trends</h2>
+                  <h2><span>↗</span> Malware Trends</h2>
                   <p>Indicator activity by malware family over time</p>
                 </div>
                 <b>
