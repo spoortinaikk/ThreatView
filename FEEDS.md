@@ -1,15 +1,15 @@
 # ThreatView – Threat Intelligence Feed Documentation
 
-ThreatView integrates public threat intelligence feeds to collect, normalize, and store Indicators of Compromise (IOCs). These indicators help identify potentially malicious IP addresses, domains, URLs, and file hashes.
+ThreatView integrates four threat intelligence feeds to collect, normalize, and store Indicators of Compromise (IOCs). These indicators help identify potentially malicious IP addresses, domains, URLs, and file hashes.
 
 ## Integrated Threat Intelligence Feeds
 
 | Feed | Data collected | Authentication | Schedule |
 |---|---|---|---|
 | AlienVault OTX | IPs, domains, URLs, file hashes, and pulse metadata | `OTX_API_KEY` | Every 60 minutes |
-| OpenPhish | Public phishing URL feed | Not required for the public feed | Every 60 minutes |
-| URLhaus | Malicious and malware-distribution URLs | `URLHAUS_AUTH_KEY` as configured by the current implementation | Every 60 minutes |
-| PhishTank | Not integrated | Registration and application access pending | Not scheduled |
+| OpenPhish | Public phishing URL feed | Not required | Every 60 minutes |
+| URLhaus | Malicious and malware-distribution URLs | `URLHAUS_AUTH_KEY` | Every 60 minutes |
+| Phishunt | Public phishing URL feed | Not required | Every 60 minutes |
 
 ## Feed Details
 
@@ -21,7 +21,7 @@ ThreatView integrates public threat intelligence feeds to collect, normalize, an
 - Extracts indicators such as IP addresses, domains, URLs, and file hashes.
 - Uses available pulse metadata for malware families, targeted countries, and industries.
 
-OTX provides contextual information through its threat intelligence pulses. The metadata available depends on the individual pulse.
+The metadata available depends on the individual pulse.
 
 ### 2. OpenPhish
 
@@ -43,14 +43,20 @@ ThreatView retrieves the public feed and processes its URL records into the comm
 
 URLhaus data is used to identify URLs associated with malware distribution and related malicious activity.
 
-### 4. PhishTank
+### 4. Phishunt
 
-- Source: https://phishtank.org/
-- Integration status: Pending.
-- Registration and application access have not yet been completed.
-- No PhishTank data is currently ingested by ThreatView.
+- Source: https://phishunt.io/
+- Public feed: https://phishunt.io/feed.txt
+- Authentication: Not required for the tested public feed.
+- Provides publicly available phishing URLs.
+- ThreatView retrieves URL records and converts them into its common IOC structure.
 
-PhishTank is documented as a planned integration and is not included in the current ingestion pipeline.
+**Integration verification:**
+- Phishunt successfully returned HTTP 200 during testing.
+- 904 phishing URL records were fetched.
+- 904 Phishunt records were verified in the ThreatView database.
+
+Phishunt is an active feed in the current ingestion pipeline.
 
 ## Ingestion Workflow
 
@@ -97,7 +103,7 @@ SENDGRID_API_KEY=your_sendgrid_api_key
 MAIL_FROM=your_verified_sender_address
 ```
 
-The database password is configured separately using:
+The database password is configured separately:
 
 ```env
 POSTGRES_PASSWORD=your_secure_password
@@ -129,8 +135,7 @@ This configures ingestion to run every 30 minutes, subject to the scheduler conf
 
 ## Limitations
 
-- PhishTank is not yet integrated.
-- OpenPhish public feed records do not include industry metadata.
+- OpenPhish and Phishunt public feed records do not provide industry metadata.
 - Industry alerts depend on metadata supplied by the relevant feed.
 - URLhaus threat classifications do not always identify a specific malware family.
 - External feed availability and authentication requirements may change.
@@ -142,4 +147,3 @@ This configures ingestion to run every 30 minutes, subject to the scheduler conf
 - Do not commit `.env` to the public Git repository.
 - Use secure credentials for database access.
 - Follow the usage terms and rate limits of each external feed provider.
-

@@ -31,6 +31,22 @@ def openphish():
     return [{"url": url} for url in urls[:1000]]
 
 
+def phishunt():
+    """Fetch suspicious phishing URLs from the public Phishunt feed."""
+    url = "https://phishunt.io/feed.txt"
+
+    response = httpx.get(url, timeout=T, follow_redirects=True)
+    response.raise_for_status()
+
+    urls = [
+        line.strip()
+        for line in response.text.splitlines()
+        if line.strip().startswith(("http://", "https://"))
+    ]
+
+    return [{"url": item} for item in urls[:1000]]
+
+
 def urlhaus():
     """Fetch recent URLhaus indicators without treating tags as families."""
     if not URLHAUS_AUTH_KEY:
@@ -78,8 +94,6 @@ def otx():
 
     for pulse in response.json().get("results", []):
         families = pulse.get("malware_families") or []
-
-        # Use one reported family as the representative family for this pulse.
         family = families[0] if families else None
 
         if isinstance(family, dict):
@@ -111,6 +125,8 @@ def otx():
 
 FEEDS = {
     "openphish": (openphish, 2),
+    "phishunt": (phishunt, 2),
     "urlhaus": (urlhaus, 2),
     "otx": (otx, 2),
 }
+
